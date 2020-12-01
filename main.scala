@@ -36,27 +36,27 @@ object HypothesisTesting extends App {
 		println("")
 
 		println("")
-		if (test_type == "greater"){
+		if (test_type == "greater") {
 			println("Calculating P(X≤a)")
 			p = greater_than_binomial_probability(sample_successes, sample_size, trial_prob)
 		}
-		else if (test_type == "less"){
+		else if (test_type == "less") {
 			println("Calculating P(X≥a)")
 			p = less_than_binomial_probability(sample_successes, sample_size, trial_prob)
 		}
 
-		else{
+		else {
 			println("Conducting a two-tailed test")
 			sig_level /= 2
 			println("Halving significance level")
 
 			val expected_mean: Double = sample_size * trial_prob
 			println(s"Expected mean value of sample $expected_mean")
-			if (sample_successes > expected_mean){
+			if (sample_successes > expected_mean) {
 				println("Number of successes is greater than mean value, calculating P(X≥a)")
 				p = greater_than_binomial_probability(sample_successes, sample_size, trial_prob)
 			}
-			else{
+			else {
 				println("Number of successes is less than mean value, calculating P(X≤a)")
 				p = less_than_binomial_probability(sample_successes, sample_size, trial_prob)
 			}
