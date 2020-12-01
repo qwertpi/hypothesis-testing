@@ -1,6 +1,7 @@
 # hypothesis-testing
-Does some of the steps for conducting a hypothesis test using the binomial distribution, you still have to determine the null and alternative hypothesis yourself.
-Not the cleanest code I've ever written but it hopefully is somewhat understandable
+Does some of the steps for conducting a hypothesis test using the binomial distribution, you still have to determine the null and alternative hypothesis yourself.  
+Not the cleanest code I've ever written but it hopefully is somewhat understandable  
+You can run without installing scala on your machine by going to https://repl.it/@rorysharp/AttachedExhaustedGame, clicking the run button and being patient
 
 Feedback and pull requests are welcome
 ## Copyright
