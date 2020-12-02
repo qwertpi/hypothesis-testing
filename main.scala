@@ -1,15 +1,17 @@
 import math.pow
 import io.StdIn.readLine
 
-object HypothesisTesting extends App {
+object BinomalTest extends App {
 	//bigint is required beacuse factorial is very big for moderately large n, who knew?
-	def factorial(n: Int): BigInt ={
-		return if (n > 1) n*factorial(n-1) else 1
+	def limited_factorial(n: BigInt, lim: BigInt, final_value: Int = 1): BigInt ={
+		if (n <= lim) final_value else n * limited_factorial(n-1, lim)
 	}
-	//returns BigDecimal beacuse it's going to be multiplied with more decimals
+	def factorial(n: Int): BigInt ={
+		return limited_factorial(n, 1)
+	}
+	//returns BigDecimal because it's going to be multiplied with more decimals
 	def num_combinations(n: Int, r: Int): BigDecimal ={
-		val denominator: BigInt = factorial(r) * factorial(n-r)
-		return BigDecimal(factorial(n)/denominator)
+		return BigDecimal(limited_factorial(n, r)/factorial(n-r))
 	}
 
 	def binomial_probability(x: Int, num_trials: Int, p: Double): Double ={
@@ -24,49 +26,48 @@ object HypothesisTesting extends App {
 		(x to num_trials).map(binomial_probability(_: Int, num_trials, p)).sum
 	}
 
-	//TODO: Add more distributions
-	val distribution: String = "binomial"
-	if (distribution == "binomial") {
-		val test_type: String = (readLine("Under the alternative hypothesis has the probability of success: 1) Increased 2) Decreased 3) Don't know  ")) match {case "1" => "greater" case "2" => "less" case "3" => "two tail"}
-		var sig_level: Double = readLine("Enter the significance level for the test ").toDouble
-		val trial_prob: Double = readLine("Under the null hypothesis what is the probability of success for a single trial ").toDouble
-		val sample_size: Int = readLine("What is the size of the sample  ").toInt
-		val sample_successes: Int = readLine("How many successes are there in the sample  ").toInt
-		var p: Double = 0
-		println("")
-
-		println("")
-		if (test_type == "greater") {
+	def calculate_p(tail: String, sample_successes: Int, sample_size: Int, trial_prob: Double): Double ={
+		if (tail == "greater") {
 			println("Calculating P(X≤a)")
-			p = greater_than_binomial_probability(sample_successes, sample_size, trial_prob)
+			return greater_than_binomial_probability(sample_successes, sample_size, trial_prob)
 		}
-		else if (test_type == "less") {
+		else if (tail == "less") {
 			println("Calculating P(X≥a)")
-			p = less_than_binomial_probability(sample_successes, sample_size, trial_prob)
+			return less_than_binomial_probability(sample_successes, sample_size, trial_prob)
 		}
 
 		else {
 			println("Conducting a two-tailed test")
-			sig_level /= 2
 			println("Halving significance level")
 
 			val expected_mean: Double = sample_size * trial_prob
 			println(s"Expected mean value of sample $expected_mean")
 			if (sample_successes > expected_mean) {
 				println("Number of successes is greater than mean value, calculating P(X≥a)")
-				p = greater_than_binomial_probability(sample_successes, sample_size, trial_prob)
+				return calculate_p("greater", sample_successes, sample_size, trial_prob)
 			}
 			else {
 				println("Number of successes is less than mean value, calculating P(X≤a)")
-				p = less_than_binomial_probability(sample_successes, sample_size, trial_prob)
+				return calculate_p("less", sample_successes, sample_size, trial_prob)
 			}
+		}
+	}
 
-		}
-		if (p > sig_level) {
-			println(s"p=$p, insufficient evidence to reject null hypothesis")
-		}
-		else {
-			println(s"p=$p, sufficient evidence to reject null hypothesis")
-		}
-	}	
+	def adjust_sig(sig: Double, tail: String): Double ={if (tail != "two tail") sig else sig/2}
+
+	val test_type: String = (readLine("Under the alternative hypothesis has the probability of success: 1) Increased 2) Decreased 3) Don't know  ")) match {case "1" => "greater" case "2" => "less" case "3" => "two tail"}
+	val sig_level: Double = adjust_sig(readLine("Enter the significance level for the test ").toDouble, test_type)
+	val trial_prob: Double = readLine("Under the null hypothesis what is the probability of success for a single trial ").toDouble
+	val sample_size: Int = readLine("What is the size of the sample  ").toInt
+	val sample_successes: Int = readLine("How many successes are there in the sample  ").toInt
+	println("")
+
+	println("")
+	val p: Double = calculate_p(test_type, sample_successes, sample_size, trial_prob)
+	if (p > sig_level) {
+		println(s"p=$p, insufficient evidence to reject null hypothesis")
+	}
+	else {
+		println(s"p=$p, sufficient evidence to reject null hypothesis")
+	}
 }
