@@ -1,10 +1,12 @@
 import math.pow
 import io.StdIn.readLine
+import annotation.tailrec
 
 object BinomalTest extends App {
+	@tailrec
 	//bigint is required beacuse factorial is very big for moderately large n, who knew?
-	def limited_factorial(n: BigInt, lim: BigInt, final_value: Int = 1): BigInt ={
-		if (n <= lim) final_value else n * limited_factorial(n-1, lim)
+	def limited_factorial(n: BigInt, lim: BigInt, acc: BigInt = 1): BigInt ={
+		if (n <= lim) acc else limited_factorial(n-1, lim, acc*n-1)
 	}
 	def factorial(n: Int): BigInt ={
 		return limited_factorial(n, 1)
