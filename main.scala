@@ -5,8 +5,8 @@ import annotation.tailrec
 object BinomalTest extends App {
 	@tailrec
 	//bigint is required beacuse factorial is very big for moderately large n, who knew?
-	def limited_factorial(n: BigInt, lim: BigInt, acc: BigInt = 1): BigInt ={
-		if (n <= lim) acc else limited_factorial(n-1, lim, acc*n-1)
+	def limited_factorial(n: BigInt, lim: BigInt, result: BigInt = 1): BigInt ={
+		if (n <= lim) result else limited_factorial(n-1, lim, result*n)
 	}
 	def factorial(n: Int): BigInt ={
 		return limited_factorial(n, 1)
@@ -16,16 +16,17 @@ object BinomalTest extends App {
 		return BigDecimal(limited_factorial(n, r)/factorial(n-r))
 	}
 
-	def binomial_probability(x: Int, num_trials: Int, p: Double): Double ={
-		return (num_combinations(num_trials, x) * BigDecimal(pow(p, x)) * BigDecimal(pow(1-p, num_trials-x))).toDouble
+	def binomial_probability(x: Int, num_trials: Int, p: Double): BigDecimal ={
+		var bigd_p: BigDecimal = BigDecimal(p)
+		return num_combinations(num_trials, x) * bigd_p.pow(x) * (1-bigd_p).pow(num_trials-x)
 	}
 	//calculates less than or equal to
 	def less_than_binomial_probability(x: Int, num_trials: Int, p: Double): Double ={
-		(0 to x).map(binomial_probability(_: Int, num_trials, p)).sum
+		((0 to x).map(binomial_probability(_: Int, num_trials, p)).sum).toDouble
 	}
 	//calculates greater than or equal to
 	def greater_than_binomial_probability(x: Int, num_trials: Int, p: Double): Double ={
-		(x to num_trials).map(binomial_probability(_: Int, num_trials, p)).sum
+		((x to num_trials).map(binomial_probability(_: Int, num_trials, p)).sum).toDouble
 	}
 
 	def calculate_p(tail: String, sample_successes: Int, sample_size: Int, trial_prob: Double): Double ={
