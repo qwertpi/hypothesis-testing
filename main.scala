@@ -31,11 +31,11 @@ object BinomalTest extends App {
 
 	def calculate_p(tail: String, sample_successes: Int, sample_size: Int, trial_prob: Double): Double ={
 		if (tail == "greater") {
-			println("Calculating P(X≤a)")
+			println("Calculating P(X≥a)")
 			return greater_than_binomial_probability(sample_successes, sample_size, trial_prob)
 		}
 		else if (tail == "less") {
-			println("Calculating P(X≥a)")
+			println("Calculating P(X≤a)")
 			return less_than_binomial_probability(sample_successes, sample_size, trial_prob)
 		}
 
