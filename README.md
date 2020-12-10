@@ -6,6 +6,14 @@ LIMITATION: Only the half of the critical region that is relevant to the inputte
 You can run without installing Scala on your machine by going to https://repl.it/@rorysharp/AttachedExhaustedGame, clicking the run button and being patient
 
 Feedback and pull requests are welcome
+
+## Screenshots
+![A test for an increase](increase_demo.png?raw=true "A test for an increase")
+
+![A test for an decrease](decrease_demo.png?raw=true "A test for an decrease")
+
+![A two-tailed test](two_tail_demo.png?raw=true "A two tailed test")
+
 ## Copyright
 Copyright © 2020  Rory Sharp All rights reserved.
 
