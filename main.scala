@@ -43,12 +43,12 @@ object HypothesisTesting extends App {
         }
         def calculate_p(): Double ={
             if (tail == "greater") {
-                println("Calculating P(X≤a)")
+                println("Calculating P(X≥a)")
                 critical_region()
                 return greater_than_probability()
             }
             else if (tail == "less") {
-                println("Calculating P(X≥a)")
+                println("Calculating P(X≤a)")
                 critical_region()
                 return less_than_probability()
             }
@@ -60,11 +60,11 @@ object HypothesisTesting extends App {
                 val expected_mean: Double = num_trials * trial_prob
                 println(s"Expected mean value of sample $expected_mean")
                 if (test_stat > expected_mean) {
-                    println("Number of successes is greater than mean value, calculating P(X≥a)")
+                    println("Number of successes is greater than mean value")
                     return (new Binomial(test_stat, num_trials, trial_prob, sig_level, "greater")).calculate_p()
                 }
                 else {
-                    println("Number of successes is less than mean value, calculating P(X≤a)")
+                    println("Number of successes is less than mean value")
                     (new Binomial(test_stat, num_trials, trial_prob, sig_level, "less")).calculate_p()
                 }
             }
