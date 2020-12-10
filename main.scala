@@ -2,59 +2,61 @@ import math.pow
 import io.StdIn.readLine
 import annotation.tailrec
 
-object BinomalTest extends App {
-	@tailrec
-	//bigint is required beacuse factorial is very big for moderately large n, who knew?
-	def limited_factorial(n: BigInt, lim: BigInt, result: BigInt = 1): BigInt ={
-		if (n <= lim) result else limited_factorial(n-1, lim, result*n)
-	}
-	def factorial(n: Int): BigInt ={
-		return limited_factorial(n, 1)
-	}
-	//returns BigDecimal because it's going to be multiplied with more decimals
-	def num_combinations(n: Int, r: Int): BigDecimal ={
-		return BigDecimal(limited_factorial(n, r)/factorial(n-r))
-	}
+object HypothesisTesting extends App {
+    class Binomial(test_stat: Int, num_trials: Int, trial_prob: Double, tail: String) {
+        @tailrec
+        //bigint is required beacuse factorial is very big for moderately large n, who knew?
+        private def limited_factorial(n: BigInt, lim: BigInt, result: BigInt = 1): BigInt ={
+            if (n <= lim) result else limited_factorial(n-1, lim, result*n)
+        }
+        private def factorial(n: Int): BigInt ={
+            return limited_factorial(n, 1)
+        }
+        //returns BigDecimal because it's going to be multiplied with more decimals
+        private def num_combinations(n: Int, r: Int): BigDecimal ={
+            return BigDecimal(limited_factorial(n, r)/factorial(n-r))
+        }
 
-	def binomial_probability(x: Int, num_trials: Int, p: Double): BigDecimal ={
-		var bigd_p: BigDecimal = BigDecimal(p)
-		return num_combinations(num_trials, x) * bigd_p.pow(x) * (1-bigd_p).pow(num_trials-x)
-	}
-	//calculates less than or equal to
-	def less_than_binomial_probability(x: Int, num_trials: Int, p: Double): Double ={
-		((0 to x).map(binomial_probability(_: Int, num_trials, p)).sum).toDouble
-	}
-	//calculates greater than or equal to
-	def greater_than_binomial_probability(x: Int, num_trials: Int, p: Double): Double ={
-		((x to num_trials).map(binomial_probability(_: Int, num_trials, p)).sum).toDouble
-	}
+        private def binomial_probability(x: Int): BigDecimal ={
+            val p: BigDecimal = BigDecimal(trial_prob)
+            return num_combinations(num_trials, x) * p.pow(x) * (1-p).pow(num_trials-x)
+        }
+        //calculates less than or equal to
+        private def less_than_binomial_probability(): Double ={
+            (0 to test_stat).map(binomial_probability(_: Int)).sum.toDouble
+        }
+        //calculates greater than or equal to
+        private def greater_than_binomial_probability(): Double ={
+            (test_stat to num_trials).map(binomial_probability(_: Int)).sum.toDouble
+        }
 
-	def calculate_p(tail: String, sample_successes: Int, sample_size: Int, trial_prob: Double): Double ={
-		if (tail == "greater") {
-			println("Calculating P(X≥a)")
-			return greater_than_binomial_probability(sample_successes, sample_size, trial_prob)
-		}
-		else if (tail == "less") {
-			println("Calculating P(X≤a)")
-			return less_than_binomial_probability(sample_successes, sample_size, trial_prob)
-		}
+        def calculate_p(): Double ={
+            if (tail == "greater") {
+                println("Calculating P(X≤a)")
+                return greater_than_binomial_probability()
+            }
+            else if (tail == "less") {
+                println("Calculating P(X≥a)")
+                return less_than_binomial_probability()
+            }
 
-		else {
-			println("Conducting a two-tailed test")
-			println("Halving significance level")
+            else {
+                println("Conducting a two-tailed test")
+                println("Halving significance level")
 
-			val expected_mean: Double = sample_size * trial_prob
-			println(s"Expected mean value of sample $expected_mean")
-			if (sample_successes > expected_mean) {
-				println("Number of successes is greater than mean value, calculating P(X≥a)")
-				return calculate_p("greater", sample_successes, sample_size, trial_prob)
-			}
-			else {
-				println("Number of successes is less than mean value, calculating P(X≤a)")
-				return calculate_p("less", sample_successes, sample_size, trial_prob)
-			}
-		}
-	}
+                val expected_mean: Double = num_trials * trial_prob
+                println(s"Expected mean value of sample $expected_mean")
+                if (test_stat > expected_mean) {
+                    println("Number of successes is greater than mean value, calculating P(X≥a)")
+                    return (new Binomial(test_stat, num_trials, trial_prob, "greater")).calculate_p()
+                }
+                else {
+                    println("Number of successes is less than mean value, calculating P(X≤a)")
+                    (new Binomial(test_stat, num_trials, trial_prob, "less")).calculate_p()
+                }
+            }
+        }
+    }
 
 	def adjust_sig(sig: Double, tail: String): Double ={if (tail != "two tail") sig else sig/2}
 
@@ -66,7 +68,7 @@ object BinomalTest extends App {
 	println("")
 
 	println("")
-	val p: Double = calculate_p(test_type, sample_successes, sample_size, trial_prob)
+	val p: Double = (new Binomial(sample_successes, sample_size, trial_prob, test_type)).calculate_p()
 	if (p > sig_level) {
 		println(s"p=$p, insufficient evidence to reject null hypothesis")
 	}
