@@ -1,9 +1,9 @@
-import math.pow
 import io.StdIn.readLine
 import annotation.tailrec
+import scala.math.Ordering.Double.TotalOrdering
 
 object HypothesisTesting extends App {
-    class Binomial(test_stat: Int, num_trials: Int, trial_prob: Double, tail: String) {
+    class Binomial(test_stat: Int, num_trials: Int, trial_prob: Double, sig_level: Double, tail: String) {
         @tailrec
         //bigint is required beacuse factorial is very big for moderately large n, who knew?
         private def limited_factorial(n: BigInt, lim: BigInt, result: BigInt = 1): BigInt ={
@@ -17,27 +17,40 @@ object HypothesisTesting extends App {
             return BigDecimal(limited_factorial(n, r)/factorial(n-r))
         }
 
-        private def binomial_probability(x: Int): BigDecimal ={
+        private def probability(x: Int): BigDecimal ={
             val p: BigDecimal = BigDecimal(trial_prob)
             return num_combinations(num_trials, x) * p.pow(x) * (1-p).pow(num_trials-x)
         }
         //calculates less than or equal to
-        private def less_than_binomial_probability(): Double ={
-            (0 to test_stat).map(binomial_probability(_: Int)).sum.toDouble
+        def less_than_probability(): Double ={
+            return (0 to test_stat).map(probability(_: Int)).sum.toDouble
         }
         //calculates greater than or equal to
-        private def greater_than_binomial_probability(): Double ={
-            (test_stat to num_trials).map(binomial_probability(_: Int)).sum.toDouble
+        def greater_than_probability(): Double ={
+            return (test_stat to num_trials).map(probability(_: Int)).sum.toDouble
         }
 
+        //unit means we don't return anything
+        def critical_region(): Unit ={
+            if (tail == "greater"){
+                val critical_value: Int = (0 to num_trials).map(x => (new Binomial(x, num_trials, trial_prob, sig_level, tail).greater_than_probability(), x)).toMap.view.filterKeys(_ < sig_level).max._2
+                println(s"Critical region is X≥$critical_value")
+            }
+            else if (tail == "less"){
+                val critical_value: Int = (0 to num_trials).map(x => (new Binomial(x, num_trials, trial_prob, sig_level, tail).less_than_probability(), x)).toMap.view.filterKeys(_ < sig_level).max._2
+                println(s"Critical region is X≤$critical_value")
+            }
+        }
         def calculate_p(): Double ={
             if (tail == "greater") {
                 println("Calculating P(X≤a)")
-                return greater_than_binomial_probability()
+                critical_region()
+                return greater_than_probability()
             }
             else if (tail == "less") {
                 println("Calculating P(X≥a)")
-                return less_than_binomial_probability()
+                critical_region()
+                return less_than_probability()
             }
 
             else {
@@ -48,11 +61,11 @@ object HypothesisTesting extends App {
                 println(s"Expected mean value of sample $expected_mean")
                 if (test_stat > expected_mean) {
                     println("Number of successes is greater than mean value, calculating P(X≥a)")
-                    return (new Binomial(test_stat, num_trials, trial_prob, "greater")).calculate_p()
+                    return (new Binomial(test_stat, num_trials, trial_prob, sig_level, "greater")).calculate_p()
                 }
                 else {
                     println("Number of successes is less than mean value, calculating P(X≤a)")
-                    (new Binomial(test_stat, num_trials, trial_prob, "less")).calculate_p()
+                    (new Binomial(test_stat, num_trials, trial_prob, sig_level, "less")).calculate_p()
                 }
             }
         }
@@ -68,7 +81,7 @@ object HypothesisTesting extends App {
 	println("")
 
 	println("")
-	val p: Double = (new Binomial(sample_successes, sample_size, trial_prob, test_type)).calculate_p()
+	val p: Double = (new Binomial(sample_successes, sample_size, trial_prob, sig_level, test_type)).calculate_p()
 	if (p > sig_level) {
 		println(s"p=$p, insufficient evidence to reject null hypothesis")
 	}

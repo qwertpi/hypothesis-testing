@@ -1,7 +1,9 @@
 # hypothesis-testing
 Does some of the steps for conducting a hypothesis test using the binomial distribution, you still have to determine the null and alternative hypothesis yourself.  
 Not the cleanest code I've ever written but it hopefully is somewhat understandable  
-You can run without installing scala on your machine by going to https://repl.it/@rorysharp/AttachedExhaustedGame, clicking the run button and being patient
+LIMITATION: Only the half of the critical region that is relevant to the inputted test stat is shown when performing a two-tailed test
+
+You can run without installing Scala on your machine by going to https://repl.it/@rorysharp/AttachedExhaustedGame, clicking the run button and being patient
 
 Feedback and pull requests are welcome
 ## Copyright
