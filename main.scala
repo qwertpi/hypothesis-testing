@@ -1,8 +1,18 @@
 import io.StdIn.readLine
 import annotation.tailrec
-import scala.math.Ordering.Double.TotalOrdering
 
-class Binomial(test_stat: Int, num_trials: Int, trial_prob: Double, sig_level: Double, tail: String) {
+class Distribution {
+    def get_critical_region(): Unit ={
+        println("Whoops! get_critical_region should be overridden!")
+
+    }
+    def pretty_calc_p(): Double = {
+        println("Whoops! pretty_calc_p should be overridden!")
+        return ???
+    }
+}
+
+class Binomial(test_stat: Int, num_trials: Int, trial_prob: Double, sig_level: Double, tail: String) extends Distribution {
     @tailrec
     //bigint is required beacuse factorial is very big for moderately large n, who knew?
     private def limited_factorial(n: BigInt, lim: BigInt, result: BigInt = 1): BigInt ={
@@ -21,19 +31,18 @@ class Binomial(test_stat: Int, num_trials: Int, trial_prob: Double, sig_level: D
         return num_combinations(num_trials, x) * p.pow(x) * (1-p).pow(num_trials-x)
     }
     //calculates less than or equal to
-    def less_than_probability(): Double ={
+    private def less_than_probability(): Double ={
         return (0 to test_stat).map(probability(_: Int)).sum.toDouble
     }
     //calculates greater than or equal to
-    def greater_than_probability(): Double ={
+    private def greater_than_probability(): Double ={
         return (test_stat to num_trials).map(probability(_: Int)).sum.toDouble
     }
 
     @tailrec
-    private def calculate_critical_region(lower: Int = 0, upper: Int = num_trials): Int ={
+    final def calculate_critical_region(lower: Int = 0, upper: Int = num_trials): Int ={
         val middle: Int = lower + (upper - lower)/2
         Thread.sleep(500)
-        println((new Binomial(middle, num_trials, trial_prob, sig_level, tail)).calc_p())
         if (upper - lower <= 1){
             if (((new Binomial(lower, num_trials, trial_prob, sig_level, tail)).calc_p()) < sig_level) return lower else return upper
         }
@@ -45,7 +54,7 @@ class Binomial(test_stat: Int, num_trials: Int, trial_prob: Double, sig_level: D
         }
     }
     //unit means we don't return anything
-    def get_critical_region(): Unit ={
+    override def get_critical_region(): Unit ={
         if (tail == "greater"){
             val critical_value: Int = calculate_critical_region()
             println(s"Critical region is X≥$critical_value")
@@ -54,11 +63,9 @@ class Binomial(test_stat: Int, num_trials: Int, trial_prob: Double, sig_level: D
             val critical_value: Int = calculate_critical_region()
             println(s"Critical region is X≤$critical_value")
         }
-        else {
 
-        }
     }
-    def pretty_calc_p(): Double = {
+    override def pretty_calc_p(): Double = {
         if (tail == "greater") println("Calculating P(X≥a)") else if (tail == "less") println("Calculating P(X≤a)")
         return calc_p()
     }
@@ -66,29 +73,40 @@ class Binomial(test_stat: Int, num_trials: Int, trial_prob: Double, sig_level: D
         if (tail == "greater") {
             return greater_than_probability()
         }
-        else if (tail == "less") {
-            return less_than_probability()
-        }
-
         else {
-            println("Conducting a two-tailed test")
-            println("Halving significance level")
-
-            val expected_mean: Double = num_trials * trial_prob
-            println(s"Expected mean value of sample $expected_mean")
-            if (test_stat > expected_mean) {
-                println("Number of successes is greater than mean value")
-                val new_b: Binomial = new Binomial(test_stat, num_trials, trial_prob, sig_level, "greater")
-                new_b.get_critical_region()
-                return new_b.pretty_calc_p()
-            }
-            else {
-                println("Number of successes is less than mean value")
-                (new Binomial(test_stat, num_trials, trial_prob, sig_level, "less")).pretty_calc_p()
-            }
+            return less_than_probability()
         }
     }
 }
+
+class TwoTailedBinomial(test_stat: Int, num_trials: Int, trial_prob: Double, sig_level: Double) extends Distribution {
+    println("Conducting a two-tailed test")
+    println("Halving significance level")
+    def select_tail(): String ={
+        val expected_mean: Double = num_trials * trial_prob
+        println(s"Expected mean value of sample $expected_mean")
+        if (test_stat > expected_mean) {
+            println("Number of successes is greater than mean value")
+            return "greater"
+        }
+        else {
+            println("Number of successes is less than mean value")
+            return "lower"
+        }
+    }
+    val selected_tail: String = select_tail()
+    
+    override def get_critical_region(): Unit ={
+        val lower_critical_value: Int = new Binomial(test_stat, num_trials, trial_prob, sig_level, "less").calculate_critical_region()
+        val upper_critical_value: Int = new Binomial(test_stat, num_trials, trial_prob, sig_level, "greater").calculate_critical_region()
+        println(s"Critical region is $lower_critical_value≥X or $upper_critical_value≤X")
+
+    }
+    override def pretty_calc_p(): Double = {
+        return new Binomial(test_stat, num_trials, trial_prob, sig_level, selected_tail).pretty_calc_p()
+    }
+
+}   
 
 object HypothesisTesting extends App {
 	def adjust_sig(sig: Double, tail: String): Double ={if (tail != "two tail") sig else sig/2}
@@ -101,7 +119,16 @@ object HypothesisTesting extends App {
 	println("")
 
 	println("")
-    val b: Binomial = new Binomial(sample_successes, sample_size, trial_prob, sig_level, test_type)
+    def get_dist(test_stat: Int, num_trials: Int, trial_prob: Double, sig_level: Double, tail: String): Distribution ={
+        if (tail != "two tail") {
+            return new Binomial(test_stat, num_trials, trial_prob, sig_level, tail)
+        }
+        else {
+            return new TwoTailedBinomial(test_stat, num_trials, trial_prob, sig_level)
+        }
+    } 
+    val b: Distribution = get_dist(sample_successes, sample_size, trial_prob, sig_level, test_type)
+
 	val p: Double = b.pretty_calc_p()
 	if (p > sig_level) {
 		println(s"p=$p, insufficient evidence to reject null hypothesis")
