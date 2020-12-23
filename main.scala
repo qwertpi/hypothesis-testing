@@ -2,15 +2,8 @@ import io.StdIn.readLine
 import annotation.tailrec
 
 abstract class Distribution {
-    def get_critical_region(): Unit ={
-        println("Whoops! get_critical_region should be overridden!")
-        ???
-
-    }
-    def pretty_calc_p(): Double = {
-        println("Whoops! pretty_calc_p should be overridden!")
-        return ???
-    }
+    def get_critical_region(): Unit
+    def pretty_calc_p(): Double
 }
 
 class Binomial(test_stat: Int, num_trials: Int, trial_prob: Double, sig_level: Double, tail: String) extends Distribution {
