@@ -1,9 +1,10 @@
 import io.StdIn.readLine
 import annotation.tailrec
 
-class Distribution {
+abstract class Distribution {
     def get_critical_region(): Unit ={
         println("Whoops! get_critical_region should be overridden!")
+        ???
 
     }
     def pretty_calc_p(): Double = {
