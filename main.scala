@@ -36,7 +36,6 @@ class Binomial(test_stat: Int, num_trials: Int, trial_prob: Double, sig_level: D
     @tailrec
     final def calculate_critical_region(lower: Int = 0, upper: Int = num_trials): Int ={
         val middle: Int = lower + (upper - lower)/2
-        Thread.sleep(500)
         if (upper - lower <= 1){
             if (((new Binomial(lower, num_trials, trial_prob, sig_level, tail)).calc_p()) < sig_level) return lower else return upper
         }
