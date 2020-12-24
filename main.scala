@@ -104,9 +104,17 @@ class TwoTailedBinomial(test_stat: Int, num_trials: Int, trial_prob: Double, sig
 object HypothesisTesting extends App {
 	def adjust_sig(sig: Double, tail: String): Double ={if (tail != "two tail") sig else sig/2}
 
+    def ToDouble(s: String): Double ={
+        try{
+            return s.toDouble
+        }
+        catch {
+            case e: NumberFormatException => return s.split("/")(0).toDouble/s.split("/")(1).toDouble
+        }
+    }
 	val test_type: String = (readLine("Under the alternative hypothesis has the probability of success: 1) Increased 2) Decreased 3) Don't know  ")) match {case "1" => "greater" case "2" => "less" case "3" => "two tail"}
-	val sig_level: Double = adjust_sig(readLine("Enter the significance level for the test ").toDouble, test_type)
-	val trial_prob: Double = readLine("Under the null hypothesis what is the probability of success for a single trial ").toDouble
+	val sig_level: Double = adjust_sig(ToDouble(readLine("Enter the significance level for the test ")), test_type)
+	val trial_prob: Double = ToDouble(readLine("Under the null hypothesis what is the probability of success for a single trial "))
 	val sample_size: Int = readLine("What is the size of the sample  ").toInt
 	val sample_successes: Int = readLine("How many successes are there in the sample  ").toInt
 	println("")
