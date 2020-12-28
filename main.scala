@@ -36,12 +36,15 @@ class Binomial(test_stat: Int, num_trials: Int, trial_prob: Double, sig_level: D
     @tailrec
     final def calculate_critical_region(lower: Int = 0, upper: Int = num_trials): Int ={
         val middle: Int = lower + (upper - lower)/2
+        //if we have whitled it down to only 2 possible valus
         if (upper - lower <= 1){
             if (((new Binomial(lower, num_trials, trial_prob, sig_level, tail)).calc_p()) < sig_level) return lower else return upper
         }
+        //if currently inside acceptance region for H0
         if (((new Binomial(middle, num_trials, trial_prob, sig_level, tail)).calc_p()) > sig_level){
             if (tail == "less") return calculate_critical_region(lower, middle) else return calculate_critical_region(middle, upper)
         }
+        //if currently inside rejection region for H0
         else{
             if (tail == "greater") return calculate_critical_region(lower, middle) else return calculate_critical_region(middle, upper)
         }
@@ -102,7 +105,7 @@ class TwoTailedBinomial(test_stat: Int, num_trials: Int, trial_prob: Double, sig
 }   
 
 object HypothesisTesting extends App {
-	def adjust_sig(sig: Double, tail: String): Double ={if (tail != "two tail") sig else sig/2}
+    def adjust_sig(sig: Double, tail: String): Double ={if (tail != "two tail") sig else sig/2}
 
     def ToDouble(s: String): Double ={
         try{
@@ -112,14 +115,14 @@ object HypothesisTesting extends App {
             case e: NumberFormatException => return s.split("/")(0).toDouble/s.split("/")(1).toDouble
         }
     }
-	val test_type: String = (readLine("Under the alternative hypothesis has the probability of success: 1) Increased 2) Decreased 3) Don't know  ")) match {case "1" => "greater" case "2" => "less" case "3" => "two tail"}
-	val sig_level: Double = adjust_sig(ToDouble(readLine("Enter the significance level for the test ")), test_type)
-	val trial_prob: Double = ToDouble(readLine("Under the null hypothesis what is the probability of success for a single trial "))
-	val sample_size: Int = readLine("What is the size of the sample  ").toInt
-	val sample_successes: Int = readLine("How many successes are there in the sample  ").toInt
-	println("")
+    val test_type: String = (readLine("Under the alternative hypothesis has the probability of success: 1) Increased 2) Decreased 3) Don't know  ")) match {case "1" => "greater" case "2" => "less" case "3" => "two tail"}
+    val sig_level: Double = adjust_sig(ToDouble(readLine("Enter the significance level for the test ")), test_type)
+    val trial_prob: Double = ToDouble(readLine("Under the null hypothesis what is the probability of success for a single trial "))
+    val sample_size: Int = readLine("What is the size of the sample  ").toInt
+    val sample_successes: Int = readLine("How many successes are there in the sample  ").toInt
+    println("")
 
-	println("")
+    println("")
     def get_dist(test_stat: Int, num_trials: Int, trial_prob: Double, sig_level: Double, tail: String): Distribution ={
         if (tail != "two tail") {
             return new Binomial(test_stat, num_trials, trial_prob, sig_level, tail)
@@ -130,12 +133,12 @@ object HypothesisTesting extends App {
     } 
     val b: Distribution = get_dist(sample_successes, sample_size, trial_prob, sig_level, test_type)
 
-	val p: Double = b.pretty_calc_p()
-	if (p > sig_level) {
-		println(s"p=$p, insufficient evidence to reject null hypothesis")
-	}
-	else {
-		println(s"p=$p, sufficient evidence to reject null hypothesis")
-	}
+    val p: Double = b.pretty_calc_p()
+    if (p > sig_level) {
+    	println(s"p=$p, insufficient evidence to reject null hypothesis")
+    }
+    else {
+    	println(s"p=$p, sufficient evidence to reject null hypothesis")
+    }
     b.get_critical_region()
 }
